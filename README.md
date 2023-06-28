@@ -6,13 +6,27 @@ Created on Wed Feb  7 15:45:29 2023
 @author: Gandhi Alexis Sinhue Contreras Torres
 UAV/UAS/Drones Matching Plot Methodology 
 """
-
-import seaborn as sns
+ # bibliotecas necesarias para el diseño de una aeronave de ala integrada y configura el estilo de cuadrícula en los gráficos utilizando 
+ # seaborn y matplotlib. Estas bibliotecas y configuraciones se utilizan posteriormente en el código para generar y personalizar los 
+ # gráficos relacionados con el diseño de la aeronave.
+ 
+import seaborn as sns               
 import numpy as np
 import math as math
 import matplotlib.pyplot as plt
 import matplotlib
 sns.set_style('whitegrid')
+
+# NOTA: 
+# seaborn: Es una biblioteca de visualización de datos que proporciona una interfaz de alto nivel para crear gráficos atractivos y informativos. En este caso, se utiliza para establecer el estilo de la cuadrícula en los gráficos mediante sns.set_style('whitegrid'). Esto significa que los gráficos tendrán una cuadrícula de fondo y ayudará a mejorar su apariencia visual.
+
+# numpy: Es una biblioteca para el cálculo numérico en Python. Se utiliza para realizar cálculos matemáticos y operaciones en matrices y vectores de números. Es comúnmente utilizado en el diseño de aeronaves para realizar cálculos y manipulaciones de datos.
+
+# math: Es un módulo que proporciona funciones matemáticas en Python. Se utiliza para acceder a funciones matemáticas básicas, como el cálculo de raíces cuadradas y logaritmos. En el contexto del diseño de aeronaves, puede ser utilizado para realizar cálculos matemáticos específicos.
+
+# matplotlib: Es una biblioteca de trazado en 2D de Python que permite crear figuras de calidad de publicación en una variedad de formatos impresos y entornos interactivos. Se utiliza para crear y personalizar gráficos. En este caso, se utiliza para generar gráficos relacionados con el diseño de la aeronave de ala integrada.
+
+# plt: Es el módulo principal de matplotlib que proporciona funciones para crear gráficos y realizar operaciones de trazado. Se utiliza para crear visualizaciones gráficas de datos, como gráficos de dispersión, gráficos de líneas, histogramas, etc.
 
 # =============================================================================
 # Plot Style Available
@@ -37,7 +51,8 @@ dark_background
 # Input Parameters
 # =============================================================================
 
-# Mass of avionics components in (kg)
+# Mass of avionics components in (kg); Estas variables deberan cambiar  según lo propuesto por el equipo de aerodinamica (los datos nuevos se obtienen del diseño elaborado el xflr5)
+
 masses = {'Controller Kit':0.5,
           'Servo_m':0.015,
           'Servo_n' :14,
@@ -100,6 +115,9 @@ class ISA:
     "ISA in Troposphere"
     def __init__(self,z):   
         "fixed parameters in sea level"
+        """
+        Initialize ISA with altitude 'z' in meters
+        """ 
         self.pressure_0 = 101325 #Pa
         self.density_0 = 1.225 #kg/m^3
         self.gravity = 9.81 #m/s^2
@@ -112,6 +130,63 @@ class ISA:
     "ISA in Troposphere"
     def __init__(self,z):
         ...
+ def temperature(self):
+ 
+   # Calculate temperature at altitude 'z'
+      
+        return self.T_0 + self.lambd * self.z
+
+    def pressure(self):
+   # Calculate pressure at altitude 'z'
+     
+        return self.pressure_0 * (1 + (self.lambd * self.z) / self.T_0) ** (-self.gravity / (self.lambd * self.R))
+
+    def density(self):
+   # Calculate density at altitude 'z'
+      
+        return self.density_0 * (self.temperature() / self.T_0) ** (-self.gravity / (self.lambd * self.R) - 1)
+
+
+def lift_coefficient(weight, density, velocity, area):
+
+   # Calculate lift coefficient
+   
+    return 2 * weight / (density * velocity ** 2 * area)
+
+
+def drag_coefficient(cd0, cl, cdmax):
+    
+   # Calculate drag coefficient
+  
+    return cd0 + cl ** 2 / (math.pi * ehekatl_param['AR']) + cdmax
+
+
+def thrust_required(weight, density, velocity, area):
+  
+   # Calculate thrust required
+   
+    return 0.5 * density * velocity ** 2 * area * drag_coefficient(aerodynamic_param['CD0'], lift_coefficient(weight, density, velocity, area), aerodynamic_param['CDmax'])
+
+
+def power_required(weight, density, velocity, area):
+   
+   # Calculate power required
+ 
+    return thrust_required(weight, density, velocity, area) * velocity
+
+
+def power_available():
+
+  # Calculate available power
+  
+    return engines['efficiency'] * engines['number of engines'] * battery_data['Battery Voltage (V)'] * battery_data['Battery Capacity (mAh)'] / (battery_data['Time energy consumption (h)'] * 1000)
+
+
+def wing_loading(weight, area):
+
+   # Calculate wing loading
+    
+    return weight / area
 
 
 # La clase ISA representa la atmósfera estándar internacional (ISA) en la troposfera.
